@@ -17,10 +17,12 @@ app.use(express.json());
 app.use(cors());
 
 // adding file uploading stroage
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+
 
 const storage = multer.diskStorage({
     destination : (req,file,cb) => {
-        return cb(null , __dirname+"Images");
+        return cb(null ,"public/assets");
     },
     filename : (req , file , cb ) => {
         return cb(null , `${ file.originalname}`)
