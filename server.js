@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const path = require('path');
 const { Register } = require('./src/Controllers/auth');
 const { authRouter } = require('./src/Routes/auth');
 const { userRouter } = require('./src/Routes/user');
@@ -15,25 +16,24 @@ const app = express();
 
 app.use(express.json());
 app.use(cors());
-
+app.use('/assets',express.static(path.join(__dirname,'/public/assets')));
 // adding file uploading stroage
-app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 
 const storage = multer.diskStorage({
     destination : (req,file,cb) => {
-        return cb(null ,"public/assets");
+        return cb(null ,__dirname+"/public/assets");
     },
     filename : (req , file , cb ) => {
-        return cb(null , `${ file.originalname}`)
+        return cb(null , `${file.originalname}`)
     }
 })
 
 const upload = multer ({ storage })
 
 // Routes with file Uploading 
+app.post('/create',verifyToken , upload.single("picture"),createPost);
 app.post('/auth/register',upload.single("picture") , Register );
-app.post('/posts',verifyToken,upload.single("picture"),createPost);
 
 // Routes 
 

@@ -15,6 +15,7 @@ const getUser = async ( request , response ) => {
 const getUserFriends = async ( request , response ) => {
     try {
         const { id } = request.params
+        console.log(id);
         await User.findById(id)
             .then (async (user) => {
                 await Promise.all( user.friends.map((id) => User.findById(id)) )

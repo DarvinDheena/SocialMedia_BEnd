@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../utils/config');
 
 const  verifyToken = async (request,response,next) => {
     try {
@@ -9,11 +10,14 @@ const  verifyToken = async (request,response,next) => {
         if (token.startsWith("Bearer ")){
             token =  token.slice(7 , token.length);
         }
-        const verified = jwt.verify(token,JWT_SECRET);
-        request.user = verified ;   
-        next();
+        try {
+            jwt.verify(token , JWT_SECRET )
+            next();
+        } catch (error) {
+            return res.json({ error: 'Token is invalid' });
+        }
     } catch (error) {
-        response.status(500).json({ message : error })
+        response.status(500).json({ message : error });
     }
 }
 

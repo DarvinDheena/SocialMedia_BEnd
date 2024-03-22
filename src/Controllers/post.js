@@ -2,27 +2,26 @@ const Post = require('../models/post');
 const User = require('../models/user');
 
 //CREATE
-const createPost =  async ( request,response ) => {
+const   createPost =  async ( request,response ) => {
     try {
-        const { userId , description , picturepath } = request.body ;
+        const { userId , description , picturePath } = request.body ;
         await User.findById(userId)
             .then( async (user) => {
-                const newPost = new Post({
+                const post = new Post({
                     userId ,
                     firstName : user.firstName ,
-                    lastName : user.lastname,
+                    lastName : user.lastName,
                     location : user.location ,
                     description ,
                     userPicturePath : user.picturePath ,
-                    picturepath ,
-                    likes : {} ,
+                    picturePath ,
                     comments : []
                 })
-                await newPost.save();
-            })
-        await Post.find()
-            .then((posts) => {
-                response.status(200).json(posts);
+                await post.save();
+                await Post.find()
+                    .then((posts) => {
+                        response.status(200).json(posts);
+                    })
             })
     } catch (error) {
         response.status(400).json({ message : error } );
@@ -54,25 +53,43 @@ const getUserPosts = async (request , response) => {
 
 const likePost = async (request,response) => {
     try {
-        const { id } = req.params;
-    const { userId } = req.body;
+        const { id } = request.params;
+    const { userId } = request.body;
     await Post.findById(id)
         .then(async (post) => {
-            const isLiked = post.likes.get(userId);
+            const isLiked = post.likes ;
             if (isLiked) {
-                post.likes.delete(userId);
+                post.likes = false ;
             } else {
-                post.likes.set(userId, true);
+                post.likes = true ;
             }
             await Post.findByIdAndUpdate(
                 id , 
-                { likes : post.likes },
-                { new : true} )
+                { likes : post.likes })
                     .then((updatedPost) => {
                         response.status(200).json(updatedPost)
                     })
         })
-    res.status(200).json(updatedPost);
+    } catch (error) {
+        response.status(400).json({ message : error });
+    }
+}
+
+const commentPost = async(request,response) => {
+    try {
+        const { id } = request.params;
+    const { newComment } = request.body;
+    await Post.findById(id)
+        .then(async (post) => {
+            let newComments = post.comments.concat(newComment);
+            await Post.findByIdAndUpdate(id ,
+                {
+                    comments : newComments
+                })
+                .then((post) => {
+                    response.status(200).json(post);
+                })
+        })
     } catch (error) {
         response.status(400).json({ message : error });
     }
@@ -82,5 +99,6 @@ module.exports = {
     getAllPosts,
     getUserPosts,
     likePost,
-    createPost
+    createPost,
+    commentPost
 }
